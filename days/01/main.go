@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/danisilveira/algorithms-and-data-structures/algorithms/searching/quickselect"
 )
 
 func main() {
@@ -13,26 +15,25 @@ func main() {
 		log.Fatalln("failed to open the file input")
 	}
 
+	calories := []int{}
+	caloriesCount := 0
+
 	scanner := bufio.NewScanner(input)
-
-	maxCalories := 0
-	calories := 0
-
 	for scanner.Scan() {
 		calorieAsString := scanner.Text()
-
 		if calorieAsString == "" {
-			if calories > maxCalories {
-				maxCalories = calories
-			}
-
-			calories = 0
+			calories = append(calories, caloriesCount)
+			caloriesCount = 0
+			continue
 		}
 
 		calorie, _ := strconv.Atoi(calorieAsString)
-
-		calories += calorie
+		caloriesCount += calorie
 	}
 
-	log.Println(maxCalories)
+	firstElf := quickselect.Select(calories, len(calories))
+	secondElf := quickselect.Select(calories, len(calories)-1)
+	thirdElf := quickselect.Select(calories, len(calories)-2)
+
+	log.Println(firstElf + secondElf + thirdElf)
 }
