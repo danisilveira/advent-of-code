@@ -33,10 +33,47 @@ func (r Result) Score() int {
 type Shape string
 
 const (
-	Rock     Shape = "Rock"
-	Paper    Shape = "Paper"
-	Scissors Shape = "Scissors"
+	Undefined Shape = "Undefined"
+	Rock      Shape = "Rock"
+	Paper     Shape = "Paper"
+	Scissors  Shape = "Scissors"
 )
+
+func NewShapeToWin(shape Shape) Shape {
+	if shape == Rock {
+		return Paper
+	}
+
+	if shape == Paper {
+		return Scissors
+	}
+
+	if shape == Scissors {
+		return Rock
+	}
+
+	return Undefined
+}
+
+func NewShapeToDraw(shape Shape) Shape {
+	return shape
+}
+
+func NewShapeToLose(shape Shape) Shape {
+	if shape == Rock {
+		return Scissors
+	}
+
+	if shape == Paper {
+		return Rock
+	}
+
+	if shape == Scissors {
+		return Paper
+	}
+
+	return Undefined
+}
 
 func (m Shape) Score() int {
 	switch m {
@@ -85,21 +122,31 @@ func main() {
 	opponentMoveToShape.Set("B", Paper)
 	opponentMoveToShape.Set("C", Scissors)
 
-	myMoveToShape := hashtable.New[string, Shape](3)
-	myMoveToShape.Set("X", Rock)
-	myMoveToShape.Set("Y", Paper)
-	myMoveToShape.Set("Z", Scissors)
+	roundResultNeeded := hashtable.New[string, Result](3)
+	roundResultNeeded.Set("X", Lose)
+	roundResultNeeded.Set("Y", Draw)
+	roundResultNeeded.Set("Z", Win)
 
 	scanner := bufio.NewScanner(input)
 	for scanner.Scan() {
 		line := scanner.Text()
-		moves := strings.Split(line, " ")
+		lineSplitted := strings.Split(line, " ")
 
-		opponentMove, _ := opponentMoveToShape.Get(moves[0])
-		myMove, _ := myMoveToShape.Get(moves[1])
+		opponentMove, _ := opponentMoveToShape.Get(lineSplitted[0])
+		resultNeeded, _ := roundResultNeeded.Get(lineSplitted[1])
 
-		result := myMove.Compare(opponentMove)
-		score += (myMove.Score() + result.Score())
+		var myMove Shape
+
+		switch resultNeeded {
+		case Win:
+			myMove = NewShapeToWin(opponentMove)
+		case Draw:
+			myMove = NewShapeToDraw(opponentMove)
+		case Lose:
+			myMove = NewShapeToLose(opponentMove)
+		}
+
+		score += (myMove.Score() + resultNeeded.Score())
 	}
 
 	log.Println(score)
