@@ -15,43 +15,75 @@ func main() {
 	}
 	defer input.Close()
 
-	duplicated := []rune{}
-	sum := 0
+	agroupCh := make(chan string)
+	findBadgeCh := make(chan []string)
+	badges := make(chan rune)
 
-	scanner := bufio.NewScanner(input)
-	for scanner.Scan() {
-		rucksack := scanner.Text()
-
-		firstCompartment := rucksack[:(len(rucksack) / 2)]
-		secondCompartment := rucksack[(len(rucksack) / 2):]
-
-		firstCompartmentMap := make(map[rune]int, len(firstCompartment))
-		sharedItemType := ' '
-
-		for _, r := range firstCompartment {
-			firstCompartmentMap[r] = 1
+	go func() {
+		scanner := bufio.NewScanner(input)
+		for scanner.Scan() {
+			rucksack := scanner.Text()
+			agroupCh <- rucksack
 		}
 
-		for _, r := range secondCompartment {
-			if _, ok := firstCompartmentMap[r]; !ok {
-				continue
+		close(agroupCh)
+	}()
+
+	go func() {
+		group := []string{}
+		for rucksack := range agroupCh {
+			group = append(group, rucksack)
+
+			if len(group) == 3 {
+				findBadgeCh <- group
+				group = []string{}
+			}
+		}
+
+		close(findBadgeCh)
+	}()
+
+	go func() {
+		for rucksacks := range findBadgeCh {
+			firstRucksackMap := map[rune]int{}
+			for _, r := range rucksacks[0] {
+				firstRucksackMap[r] = 1
 			}
 
-			sharedItemType = r
+			secondRucksackMap := map[rune]int{}
+			for _, r := range rucksacks[1] {
+				secondRucksackMap[r] = 1
+			}
+
+			sharedItemType := ' '
+			for _, r := range rucksacks[2] {
+				if _, ok := firstRucksackMap[r]; !ok {
+					continue
+				}
+
+				if _, ok := secondRucksackMap[r]; !ok {
+					continue
+				}
+
+				sharedItemType = r
+			}
+
+			if !unicode.IsSpace(sharedItemType) {
+				badges <- sharedItemType
+			}
 		}
 
-		if !unicode.IsSpace(sharedItemType) {
-			duplicated = append(duplicated, sharedItemType)
-		}
-	}
+		close(badges)
+	}()
 
-	for _, r := range duplicated {
+	sum := 0
+	for badge := range badges {
 		subtract := 96
-		if unicode.IsUpper(r) {
+		if unicode.IsUpper(badge) {
 			subtract = 38
 		}
 
-		sum += (int(r) - subtract)
+		sum += (int(badge) - subtract)
 	}
 
 	fmt.Println(sum)
