@@ -14,10 +14,6 @@ type Pair struct {
 	max int
 }
 
-func (p Pair) String() string {
-	return fmt.Sprintf("%d-%d", p.min, p.max)
-}
-
 func NewPairFromString(pair string) Pair {
 	splitted := strings.Split(pair, "-")
 	min, _ := strconv.Atoi(splitted[0])
@@ -29,20 +25,16 @@ func NewPairFromString(pair string) Pair {
 	}
 }
 
-func SwapPairsIfNeeded(firstPair, secondPair Pair) (Pair, Pair) {
-	if firstPair.min == secondPair.min {
-		if firstPair.max > secondPair.max {
-			return firstPair, secondPair
-		}
+func (p Pair) IsFullyContained(otherPair Pair) bool {
+	return p.min <= otherPair.min && p.max >= otherPair.max
+}
 
-		return secondPair, firstPair
-	}
+func (p Pair) HasOverlap(otherPair Pair) bool {
+	return p.max >= otherPair.min && p.max <= otherPair.max
+}
 
-	if firstPair.min < secondPair.min {
-		return firstPair, secondPair
-	}
-
-	return secondPair, firstPair
+func (p Pair) String() string {
+	return fmt.Sprintf("%d-%d", p.min, p.max)
 }
 
 func main() {
@@ -60,20 +52,29 @@ func main() {
 
 		firstPair := NewPairFromString(pairs[0])
 		secondPair := NewPairFromString(pairs[1])
-		fmt.Printf("firstPair : %v\n", firstPair)
-		fmt.Printf("secondPair: %v\n", secondPair)
 
 		firstPair, secondPair = SwapPairsIfNeeded(firstPair, secondPair)
-		fmt.Printf("firstPair : %v\n", firstPair)
-		fmt.Printf("secondPair: %v\n", secondPair)
 
-		if firstPair.min <= secondPair.min && firstPair.max >= secondPair.max {
-			fmt.Printf("count + 1\n")
+		if firstPair.IsFullyContained(secondPair) || firstPair.HasOverlap(secondPair) {
 			count++
 		}
-
-		fmt.Printf("\n")
 	}
 
 	fmt.Println(count)
+}
+
+func SwapPairsIfNeeded(firstPair, secondPair Pair) (Pair, Pair) {
+	if firstPair.min == secondPair.min {
+		if firstPair.max > secondPair.max {
+			return firstPair, secondPair
+		}
+
+		return secondPair, firstPair
+	}
+
+	if firstPair.min < secondPair.min {
+		return firstPair, secondPair
+	}
+
+	return secondPair, firstPair
 }
