@@ -35,8 +35,14 @@ func NewActionFromString(sentence string, stacks []stack.Stack[rune]) Action {
 }
 
 func (a Action) Do() {
+	items := []rune{}
 	for i := 0; i < a.Quantity; i++ {
 		item, _ := a.From.Pop()
+		items = append(items, item)
+	}
+
+	for i := len(items) - 1; i >= 0; i-- {
+		item := items[i]
 		a.To.Push(item)
 	}
 }
