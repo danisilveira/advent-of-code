@@ -36,21 +36,15 @@ func NewActionFromString(sentence string, stacks []stack.Stack[rune]) Action {
 
 func (a Action) Do() {
 	for i := 0; i < a.Quantity; i++ {
-		item, err := a.From.Pop()
-		if err != nil {
-			fmt.Println("[ERROR]: Pop in Action.Do:", err.Error())
-		}
-
-		if err := a.To.Push(item); err != nil {
-			fmt.Println("[ERROR]: Push in Action.Do:", err.Error())
-		}
+		item, _ := a.From.Pop()
+		a.To.Push(item)
 	}
 }
 
 func main() {
 	input, err := os.Open("input.txt")
 	if err != nil {
-		log.Fatalln("failed to open the file input")
+		log.Fatalln("failed to open the input file")
 	}
 	defer input.Close()
 

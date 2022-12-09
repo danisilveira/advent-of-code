@@ -11,7 +11,7 @@ import (
 func main() {
 	input, err := os.Open("input.txt")
 	if err != nil {
-		log.Fatalln("failed to open the file input")
+		log.Fatalln("failed to open the input file")
 	}
 	defer input.Close()
 
